@@ -1,0 +1,227 @@
+/* 1. Bảng màu chung: chỉnh ở đây để đổi màu toàn ứng dụng. */
+:root {
+    --green: #106f65;
+    --green-dark: #075b53;
+    --pale: #d9e9df;
+    --line: #d8e1dc;
+    --ink: #172320;
+    --muted: #697c73;
+    --background: #edf3ef;
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: var(--ink);
+    background: var(--background);
+    font-size: 16px;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: inherit; text-decoration: none; }
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+h1, h2, p { margin-top: 0; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid #72b4a3; outline-offset: 3px; }
+
+/* 2. Thanh điều hướng bên trái. */
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    width: 208px;
+    padding: 27px 14px 18px;
+    border-right: 1px solid var(--line);
+    background: #f8faf8;
+}
+.logo { display: block; margin: 0 4px 22px; font-size: 28px; font-weight: 750; letter-spacing: -1px; }
+.logo span { display: inline-block; width: 7px; height: 12px; margin: 0 0 10px 2px; border-radius: 2px 2px 4px 0; background: var(--green); }
+.sidebar-caption { margin: 0 4px 14px; font-size: 10px; font-weight: 600; letter-spacing: .3px; }
+.sidebar nav { display: grid; gap: 7px; }
+.sidebar nav a { display: flex; align-items: center; gap: 11px; padding: 11px 10px; border-radius: 6px; font-size: 14px; }
+.sidebar nav a:hover { background: #e8f0eb; }
+.sidebar nav .active { background: #d2e4d9; color: #164d42; }
+.nav-icon { width: 18px; color: #607c71; font-size: 20px; line-height: 1; text-align: center; }
+.sidebar-bottom { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--line); }
+.sidebar-bottom summary { font-size: 14px; cursor: pointer; }
+.sidebar-bottom details p { margin: 12px 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.local-label { display: block; margin-top: 20px; color: #7d9086; font-size: 12px; }
+
+/* 3. Bố cục nội dung và các thẻ màu trắng. */
+.workspace { max-width: 1390px; margin-left: 208px; padding: 38px 46px; }
+.page-heading { margin-bottom: 24px; }
+.page-heading h1 { margin-bottom: 6px; font-size: 27px; font-weight: 700; letter-spacing: -.6px; }
+.page-heading p { margin-bottom: 0; font-size: 14px; }
+.breadcrumb { margin-bottom: 9px !important; color: #749080; font-size: 13px !important; }
+.breadcrumb strong { color: var(--ink); font-weight: 500; }
+.two-columns, .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.card { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: white; box-shadow: 0 2px 8px #234f3903; }
+.settings-card { padding-top: 15px; }
+.card h2 { margin-bottom: 13px; font-size: 16px; font-weight: 500; }
+
+/* 4. Vùng tải ảnh: input trong suốt nằm trên vùng kéo thả. */
+.dropzone { position: relative; display: grid; min-height: 325px; place-items: center; overflow: hidden; border: 1.5px dashed #79a999; border-radius: 6px; background: linear-gradient(140deg, #dcebe0, #d1e3d9); }
+.dropzone.dragover { border-color: var(--green); background: #c3e0d1; }
+.dropzone input[type=file] { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.dropzone:focus-within { outline: 3px solid #72b4a3; outline-offset: 2px; }
+.drop-content { padding: 24px 12px; text-align: center; pointer-events: none; }
+.upload-icon { display: block; margin-bottom: 13px; color: var(--green); font-size: 40px; line-height: 1; }
+.drop-content strong { display: block; font-size: 14px; font-weight: 500; }
+.drop-content small { display: block; margin-top: 5px; color: #526b5e; font-size: 12px; }
+.dropzone img { width: 100%; height: 325px; object-fit: contain; background: #e5eee8; }
+.dropzone.has-image .drop-content { display: none; }
+.file-info { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 13px; }
+.file-info > div { min-width: 0; }
+.file-info strong { display: block; overflow-wrap: anywhere; font-weight: 500; }
+.file-info small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+.file-symbol { display: grid; place-items: center; flex-shrink: 0; width: 38px; height: 38px; background: #e4eee7; border-radius: 5px; color: var(--green); font-size: 23px; }
+.chosen-mark { margin-left: auto; color: var(--green); }
+.capacity-section { margin-top: 17px; padding-top: 14px; border-top: 1px solid var(--line); }
+.capacity-section p { margin-bottom: 8px; font-size: 13px; }
+.capacity-section > small { display: block; margin-top: 9px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.progress-track { height: 8px; overflow: hidden; border-radius: 8px; background: #d5e5da; }
+#capacity-bar { width: 0; height: 100%; border-radius: inherit; background: var(--green); }
+#capacity-bar.over { background: #b35e50; }
+.upload-status { margin: 15px 0 0; padding-top: 13px; border-top: 1px solid var(--line); font-size: 13px; }
+
+/* 5. Ô nhập và các lựa chọn có kiểu dáng nút. */
+.field-title { display: block; margin: 15px 0 7px; font-size: 14px; font-weight: 500; }
+.settings-card > .field-title:first-child { margin-top: 0; }
+textarea { width: 100%; min-height: 95px; padding: 10px; border: 1px solid #c8d0ca; border-radius: 7px; background: #fff; font-size: 14px; line-height: 1.6; resize: vertical; }
+textarea::placeholder { color: #7a847e; }
+.option-row { display: flex; gap: 7px; }
+.option { position: relative; flex: 1; min-width: 0; cursor: pointer; }
+.option input { position: absolute; opacity: 0; }
+.option span { display: flex; align-items: center; justify-content: center; flex-direction: column; min-height: 38px; padding: 7px 5px; border: 1px solid #cfd5d1; border-radius: 7px; color: #283c33; font-size: 13px; text-align: center; }
+.option span small { display: block; font-size: 11px; margin-top: 2px; }
+.option input:checked + span { border-color: #3c8b7c; background: #cfe3d8; color: #153d34; box-shadow: inset 0 0 0 1px #3c8b7c12; }
+.option input:focus-visible + span { outline: 3px solid #72b4a3; outline-offset: 2px; }
+.method-options .option span { font-size: 12px; }
+.method-note { margin: 10px 0 0; color: #718178; font-size: 12px; line-height: 1.65; }
+.position-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.position-pill { padding: 5px 12px; border: 1px solid #4e9282; border-radius: 20px; background: #d4e7dc; font-size: 13px; }
+.position-row small { color: #798c80; font-size: 12px; }
+.primary-button { width: 100%; margin-top: 17px; padding: 11px 12px; border: 1px solid #0a645c; border-radius: 6px; background: var(--green); color: white; font-size: 14px; }
+.primary-button:hover { background: var(--green-dark); }
+.action-note { margin: 10px 0 0; color: #687c70; text-align: center; font-size: 12px; }
+.payload-details { margin-top: 9px; color: #697d70; font-size: 12px; }
+.payload-details summary { cursor: pointer; }
+.payload-details input { display: block; width: 100%; margin-top: 10px; font-size: 13px; }
+.payload-details small { display: block; margin-top: 6px; font-size: 12px; }
+.integrity-status { padding: 6px 9px; border: 1px solid #cbd7ce; border-radius: 5px; background: #eef3ef; font-size: 13px; }
+.output-options { max-width: 285px; }
+.output-options .option span { min-height: 32px; border-radius: 20px; }
+
+/* 6. Kết quả trích xuất. */
+.result-card { margin-top: 17px; }
+.result-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.result-heading h2 { margin-bottom: 0; }
+.result-heading > div { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.copy-button { padding: 4px 9px; border: 1px solid #d4ded6; border-radius: 5px; background: #fff; color: #4a5e51; font-size: 12px; }
+.success-text { color: var(--green); font-size: 12px; }
+.message-result { margin: 0; padding: 13px; border: 1px solid #d5ddd7; border-radius: 6px; background: #fafcfb; font: 14px/1.7 Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.page-note { margin: 12px 0 0; color: #77897e; font-size: 12px; line-height: 1.7; }
+
+/* 7. Phân tích pixel và hex. */
+.compact { min-height: 105px; }
+.compact .drop-content { padding: 16px; }
+.compact .upload-icon { display: none; }
+.compact img { height: 105px; }
+.previous-image { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 12px; color: #63776b; }
+.previous-image img { width: 44px; height: 38px; object-fit: cover; border-radius: 4px; }
+.previous-image span { overflow-wrap: anywhere; }
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; }
+.stat-card { padding: 14px; }
+.stat-icon { display: grid; width: 36px; height: 36px; margin-bottom: 15px; place-items: center; border-radius: 7px; background: #d9e9df; color: #38796b; font-size: 23px; }
+.stat-card small { display: block; font-size: 12px; }
+.stat-card strong { display: block; margin-top: 7px; font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
+.coordinate-card { display: grid; grid-template-columns: 1fr 1fr 110px; align-items: end; gap: 12px; }
+.coordinate-card label { min-width: 0; font-size: 13px; }
+.coordinate-card input { display: block; width: 100%; margin-top: 5px; padding: 7px 9px; border: 1px solid #cbd4cd; border-radius: 6px; font-size: 14px; }
+.coordinate-card .primary-button { margin-top: 0; min-height: 38px; padding: 8px; }
+.bit-card { margin-top: 15px; }
+.bit-card h2 { font-size: 14px; }
+.table-scroll { overflow: auto; }
+.pixel-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; white-space: nowrap; }
+.pixel-table th { padding: 8px 7px; background: #d6e6da; color: #3b5145; font-size: 12px; font-weight: 500; }
+.pixel-table td { padding: 8px 7px; border-bottom: 1px solid #dce4de; }
+.bit-cell { font-family: Consolas, monospace; }
+.bit-cell span { display: inline-block; width: 16px; text-align: center; }
+.bit-cell .last-bit { border: 1px solid #167a69; background: #d2e9de; border-radius: 3px; color: #085c4f; }
+.pixel-table .lsb-cell { background: #13776a; color: #fff; text-align: center; }
+.empty-state { margin: 10px 0; padding: 16px 0; color: #8a9b90; font-size: 13px; line-height: 1.7; }
+.hex-card { margin-top: 20px; }
+.hex-card h2 { font-size: 15px; margin-bottom: 12px; }
+.hex-scroll { max-height: 360px; overflow: auto; border-radius: 6px; background: #17241c; }
+.hex-table { width: 100%; border-collapse: collapse; color: #cde0d0; font: 13px/1.7 Consolas, monospace; white-space: pre; }
+.hex-table th { position: sticky; top: 0; padding: 10px 13px; background: #21382b; color: #80b69b; text-align: left; font-weight: 400; }
+.hex-table td { padding: 4px 13px; }
+.hex-table td:first-child { color: #7da58c; }
+.hex-table tr:hover td { background: #2c4937; }
+.hex-empty { padding: 22px 16px; border-radius: 6px; background: #17241c; color: #8cb69b; font: 13px/1.8 Consolas, monospace; }
+.hex-empty span { margin-left: 18px; color: #72947c; }
+.error-panel { max-width: 650px; margin-top: 35px; padding: 30px; }
+.error-panel h1 { font-size: 25px; }
+.error-panel p { color: var(--muted); line-height: 1.7; }
+.back-link { display: inline-block; margin-top: 14px; color: var(--green); text-decoration: underline; }
+
+/* 8. Màn hình nhỏ. */
+@media (max-width: 1200px) {
+    .sidebar { width: 180px; padding-left: 10px; padding-right: 10px; }
+    .workspace { margin-left: 180px; padding: 30px 26px; }
+    .sidebar-caption { font-size: 9px; }
+    .coordinate-card { grid-template-columns: 1fr 1fr; }
+    .coordinate-card .primary-button { grid-column: 1 / -1; }
+    .method-options .option span { font-size: 11px; }
+}
+@media (max-width: 950px) {
+    .two-columns, .analysis-grid { grid-template-columns: 1fr; }
+    .dropzone, .dropzone img { min-height: 250px; height: 250px; }
+    .compact, .compact img { min-height: 105px; height: 105px; }
+    .coordinate-card { grid-template-columns: 1fr 1fr 120px; }
+    .coordinate-card .primary-button { grid-column: auto; }
+    .method-options .option span { font-size: 13px; }
+    .page-heading h1 { font-size: 25px; }
+}
+@media (max-width: 600px) {
+    .sidebar { position: static; width: auto; padding: 18px 14px 12px; border-right: none; border-bottom: 1px solid var(--line); }
+    .logo { margin-bottom: 9px; font-size: 25px; }
+    .sidebar-caption { font-size: 10px; margin-bottom: 13px; }
+    .sidebar nav { display: flex; gap: 4px; }
+    .sidebar nav a { flex: 1; justify-content: center; gap: 5px; padding: 9px 4px; font-size: 12px; }
+    .nav-icon { width: 14px; font-size: 16px; }
+    .sidebar-bottom { display: none; }
+    .workspace { margin-left: 0; padding: 24px 14px; }
+    .page-heading h1 { font-size: 23px; }
+    .page-heading p { font-size: 13px; }
+    .card { padding: 14px; }
+    .stat-grid { gap: 7px; }
+    .stat-card { padding: 11px; }
+    .stat-card small { font-size: 11px; }
+    .stat-card strong { font-size: 12px; }
+    .coordinate-card { grid-template-columns: 1fr 1fr 90px; gap: 9px; }
+    .coordinate-card .primary-button { font-size: 13px; }
+    .method-options .option span { font-size: 11px; }
+}
+/* Tùy chọn vị trí và khóa. */
+.position-options { flex-wrap: wrap; }
+.position-options .option { flex-basis: 85px; }
+.position-options .option span { min-height: 34px; font-size: 13px; border-radius: 18px; }
+.setting-input { width: 100%; padding: 9px 11px; border: 1px solid #c8d4cb; border-radius: 6px; background: #fcfefd; color: #244638; font-size: 14px; }
+#key-settings small { display: block; }
+#position-note { margin-bottom: 4px; }
+/* Phân tích kiểm chứng và cấu hình trích xuất. */
+.probe-settings { margin-top: 18px; }
+.probe-settings .setting-input { max-width: 500px; display: block; }
+.candidate-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 14px; margin-top: 15px; }
+.candidate-card { padding: 17px; border: 1px solid #bdd9cb; border-radius: 8px; background: #f4faf6; }
+.candidate-card p { font-size: 14px; line-height: 1.6; margin-top: 10px; }
+.candidate-link { display: block; text-align: center; box-sizing: border-box; }
+.evidence-line { padding: 12px; border-left: 3px solid #b5d6c5; background: #f4f8f5; font-size: 14px; line-height: 1.7; }
+.evidence-line strong { color: #147364; margin-right: 8px; }
+.warning-text { color: #936135; font-size: 14px; line-height: 1.7; }
+.handoff-notice { margin-bottom: 18px; color: #256551; font-size: 14px; line-height: 1.7; }
+.locked-config { border: 0; padding: 0; margin: 0; min-width: 0; }
+.result-card details { margin-top: 16px; font-size: 14px; }
+.result-card details summary { cursor: pointer; margin-bottom: 12px; }

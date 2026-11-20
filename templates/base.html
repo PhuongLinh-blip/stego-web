@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Stego Lab{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=10">
+    <script src="/static/js/app.js?v=10" defer></script>
+</head>
+<body>
+    <!-- Thanh bên dùng chung cho ba trang -->
+    <aside class="sidebar">
+        <a class="logo" href="/">stego lab<span></span></a>
+        <p class="sidebar-caption">KHÔNG GIAN THỬ NGHIỆM LSB</p>
+
+        <nav aria-label="Chức năng chính">
+            <a href="/" class="{{ 'active' if request.path == '/' else '' }}">
+                <span class="nav-icon">▢</span>Giấu thông tin
+            </a>
+            <a href="/extract" class="{{ 'active' if request.path == '/extract' else '' }}">
+                <span class="nav-icon">⇥</span>Trích xuất
+            </a>
+            <a href="/analyze" class="{{ 'active' if request.path == '/analyze' else '' }}">
+                <span class="nav-icon">▧</span>Phân tích ảnh
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <details>
+                <summary>ⓘ Hướng dẫn</summary>
+                <p>Chọn ảnh, chọn thuật toán và thực hiện. Khi trích xuất cần đúng cấu hình lúc nhúng.</p>
+            </details>
+            <span class="local-label">Định dạng v10 · Hoàn toàn cục bộ</span>
+        </div>
+    </aside>
+
+    <main class="workspace">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

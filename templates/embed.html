@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Giấu thông tin · Stego Lab{% endblock %}
+{% block content %}
+<header class="page-heading">
+    <h1>Giấu thông tin vào ảnh (LSB)</h1>
+    <p>Nhúng thông điệp bí mật và dữ liệu ẩn vào ảnh của bạn.</p>
+</header>
+
+<form action="/" method="post" enctype="multipart/form-data">
+    <div class="two-columns">
+        <section class="card upload-card">
+
+                <div class="dropzone" id="dropzone">
+                    <input id="image" name="image" type="file"
+                           accept=".png,.bmp,.jpg,.jpeg" aria-label="Chọn ảnh" required>
+                    <div class="drop-content">
+                        <span class="upload-icon">↥</span>
+                        <strong>Kéo thả ảnh vào đây hoặc nhấp để chọn</strong>
+                        <small>Hỗ trợ: PNG, BMP, JPG/JPEG</small>
+                    </div>
+                    <img id="preview" alt="Xem trước ảnh" hidden>
+                </div>
+                <div class="file-info" id="file-info" hidden>
+                    <span class="file-symbol">▧</span>
+                    <div>
+                        <strong id="file-name"></strong>
+                        <small id="file-detail"></small>
+                    </div>
+                    <span class="chosen-mark">✓</span>
+                </div>
+
+            <div class="capacity-section">
+                <p id="capacity">Khả năng chứa dữ liệu: chọn ảnh để tính</p>
+                <div class="progress-track"><div id="capacity-bar"></div></div>
+                <small id="capacity-help">Sức chứa được tính theo thuật toán và vùng thực sự được chọn.</small>
+            </div>
+        </section>
+
+        <section class="card settings-card">
+            <label class="field-title" for="message">Thông điệp cần giấu</label>
+            <textarea id="message" name="message" rows="4"
+                      placeholder="Nhập thông điệp bí mật tại đây..."></textarea>
+            <details class="payload-details">
+                <summary>Hoặc giấu một tệp tin</summary>
+                <input id="payload" name="payload" type="file" aria-label="Tệp cần giấu">
+                <small>Nếu chọn tệp, chương trình ưu tiên tệp thay cho văn bản.</small>
+            </details>
+
+                <label class="field-title">Phương pháp (Method)</label>
+                <div class="option-row method-options">
+                    <label class="option">
+                        <input type="radio" name="method" value="replacement" {% if request.form.get('method', 'replacement') == 'replacement' %}checked{% endif %}>
+                        <span>LSB Replacement</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="method" value="matching" {% if request.form.get('method') == 'matching' %}checked{% endif %}>
+                        <span>LSB Matching</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="method" value="lsbmr" {% if request.form.get('method') == 'lsbmr' %}checked{% endif %}>
+                        <span>LSBMR</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="method" value="jpeg_dct" {% if request.form.get('method') == 'jpeg_dct' %}checked{% endif %}>
+                        <span>JPEG DCT</span>
+                    </label>
+                </div>
+                <div id="bit-settings">
+                    <label class="field-title">Số bit thay thế LSB (Bit Depth)</label>
+                    <div class="option-row">
+                        <label class="option">
+                            <input type="radio" name="k" value="1" {% if request.form.get('k', '1') == '1' %}checked{% endif %}>
+                            <span>1-bit<small>Khuyên dùng</small></span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="k" value="2" {% if request.form.get('k', '1') == '2' %}checked{% endif %}>
+                            <span>2-bit</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="k" value="3" {% if request.form.get('k', '1') == '3' %}checked{% endif %}>
+                            <span>3-bit</span>
+                        </label>
+                    </div>
+                </div>
+                <p class="method-note" id="method-note" aria-live="polite">
+                    Thay trực tiếp các bit cuối của giá trị màu.
+                </p>
+                <!-- Vị trí và khóa được gửi tới Python ở cả hai trang. -->
+                <label class="field-title">Vị trí (Position Mode)</label>
+                <div class="option-row position-options">
+                    <label class="option">
+                        <input type="radio" name="position_mode" value="sequential" {% if request.form.get('position_mode', 'sequential') == 'sequential' %}checked{% endif %}>
+                        <span>Tuần tự</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="position_mode" value="keyed" {% if request.form.get('position_mode') == 'keyed' %}checked{% endif %}>
+                        <span>Có khóa</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="position_mode" value="adaptive" {% if request.form.get('position_mode') == 'adaptive' %}checked{% endif %}>
+                        <span>Thích nghi</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="position_mode" value="edge" {% if request.form.get('position_mode') == 'edge' %}checked{% endif %}>
+                        <span>Theo biên ảnh</span>
+                    </label>
+                </div>
+                <div id="key-settings" hidden>
+                    <label class="field-title" for="key">Khóa vị trí</label>
+                    <input class="setting-input" id="key" name="key" type="password" autocomplete="off" maxlength="128" placeholder="Nhập cùng khóa khi giấu và trích xuất" disabled>
+                    <small class="method-note">Khóa xáo trộn vị trí, không mã hóa nội dung.</small>
+                </div>
+                <div id="threshold-settings" hidden>
+                    <label class="field-title" for="threshold">Ngưỡng chọn vùng (1–255)</label>
+                    <input class="setting-input" id="threshold" name="threshold" type="number" min="1" max="255" value="{{ request.form.get('threshold', '12') }}" disabled>
+                </div>
+                <p class="method-note" id="position-note" aria-live="polite">Từ góc trên trái, lần lượt R, G, B; không dùng alpha.</p>
+
+
+            <button class="primary-button" type="submit">Giấu tin và giữ định dạng ảnh</button>
+            <p class="action-note" id="output-format">PNG → PNG · BMP → BMP · JPG/JPEG → JPG/JPEG</p>
+        </section>
+    </div>
+</form>
+{% endblock %}

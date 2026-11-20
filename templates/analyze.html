@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Phân tích ảnh · Stego Lab{% endblock %}
+{% block content %}
+<header class="page-heading">
+    <p class="breadcrumb">Trang chủ / <strong>Phân tích ảnh</strong></p>
+    <h1>Phân tích ảnh</h1>
+</header>
+
+<form action="/analyze" method="post" enctype="multipart/form-data">
+    <div class="analysis-grid">
+        <div>
+            <section class="card analysis-upload">
+
+                <div class="dropzone compact" id="dropzone">
+                    <input id="image" name="image" type="file"
+                           accept=".png,.bmp,.jpg,.jpeg" aria-label="Chọn ảnh" required>
+                    <div class="drop-content">
+                        <span class="upload-icon">↥</span>
+                        <strong>Kéo thả ảnh vào đây hoặc nhấp để chọn</strong>
+                        <small>Hỗ trợ: PNG, BMP, JPG/JPEG</small>
+                    </div>
+                    <img id="preview" alt="Xem trước ảnh" hidden>
+                </div>
+                <div class="file-info" id="file-info" hidden>
+                    <span class="file-symbol">▧</span>
+                    <div>
+                        <strong id="file-name"></strong>
+                        <small id="file-detail"></small>
+                    </div>
+                    <span class="chosen-mark">✓</span>
+                </div>
+
+                {% if image_preview %}
+                <div class="previous-image">
+                    <img src="{{ image_preview }}" alt="Ảnh vừa phân tích">
+                    <span>{{ filename }}</span>
+                </div>
+                {% endif %}
+            </section>
+            <div class="stat-grid">
+                <div class="card stat-card"><span class="stat-icon">▧</span><small>Kích thước ảnh</small>
+                    <strong>{{ (size[0] ~ ' × ' ~ size[1] ~ ' px') if size is defined else 'Chưa chọn' }}</strong>
+                </div>
+                <div class="card stat-card"><span class="stat-icon">▤</span><small>Dung lượng tệp</small>
+                    <strong>{{ ('%.1f KB' | format(total / 1024)) if total is defined else '—' }}</strong>
+                </div>
+                <div class="card stat-card"><span class="stat-icon">⊙</span><small>Điểm ảnh đang chọn</small>
+                    <strong>X: {{ x|default(0) }}, Y: {{ y|default(0) }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <section class="card coordinate-card">
+                <label>Tọa độ X<input id="x" name="x" type="number" min="0" value="{{ x|default(0) }}" required></label>
+                <label>Tọa độ Y<input id="y" name="y" type="number" min="0" value="{{ y|default(0) }}" required></label>
+                <button class="primary-button" type="submit">Phân tích</button>
+            </section>
+            <section class="card bit-card">
+                <p class="page-note">Bảng này hiển thị bit màu RGB của pixel. Với JPEG DCT, thông điệp nằm trong hệ số ảnh nén, không phải các LSB pixel ở đây.</p>
+                <h2>Phân tích Bit của Pixel (X: {{ x|default(0) }}, Y: {{ y|default(0) }})</h2>
+                {% if pixels %}
+                <div class="table-scroll">
+                    <table class="pixel-table">
+                        <thead><tr><th>Kênh</th><th>Giá trị (Dec)</th><th>Nhị phân (8-bits)</th><th>LSB</th></tr></thead>
+                        <tbody>
+                            {% for p in pixels %}
+                            <tr>
+                                <td>{{ p[0] }}</td><td>{{ p[1] }}</td>
+                                <td class="bit-cell">{% for bit in p[3] %}<span class="{{ 'last-bit' if loop.last and p[0] != 'A' else '' }}">{{ bit }}</span>{% endfor %}</td>
+                                <td class="lsb-cell">{{ p[3][-1] if p[0] != 'A' else '—' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="empty-state">Chọn ảnh và tọa độ để xem các bit màu tại pixel.</p>
+                {% endif %}
+            </section>
+        </div>
+    </div>
+
+<section class="card probe-settings">
+    <h2>Kiểm tra cấu hình trích xuất</h2>
+    <p class="page-note">PNG/BMP: thử Replacement 1/2/3 bit và LSBMR. JPEG: thử JPEG DCT trên hệ số ảnh nén. Kiểm tra các vị trí tuần tự/thích nghi/biên. Matching cùng cách đọc với Replacement 1 bit. Không tự dò khóa bí mật.</p>
+    <label class="field-title" for="probe-key">Khóa vị trí nếu bạn biết (không bắt buộc)</label>
+    <input class="setting-input" id="probe-key" name="probe_key" type="password" autocomplete="off" maxlength="128">
+    <label class="field-title" for="probe-threshold">Thử thêm ngưỡng vùng (1–255)</label>
+    <input class="setting-input" id="probe-threshold" name="probe_threshold" type="number" min="1" max="255" value="12">
+<p class="page-note">Tất cả kiểm tra chạy cục bộ. Không gọi AI hoặc API bên ngoài.</p>
+    <button class="primary-button" type="submit">Phân tích và thử cấu hình</button>
+</section>
+
+</form>
+
+{% if report %}
+<section class="card result-card">
+    <h2>Kết quả kiểm chứng bằng Python</h2>
+    <p>Đã thử {{ report.attempts|length }} cấu hình đọc trong {{ report.elapsed }} giây.</p>
+    {% if report.limited %}<p class="warning-text">Đã dừng ở giới hạn thời gian giữa các lượt thử. Danh sách kiểm tra chưa đầy đủ.</p>{% endif %}
+    {% if report.candidates %}
+    <p class="success-text">Tìm thấy cấu hình đọc được STW1, độ dài hợp lệ và CRC32 khớp.</p>
+    <div class="candidate-grid">
+        {% for c in report.candidates %}
+        <article class="candidate-card">
+            <strong>{{ c.id }} · {{ c.config.method }} · {{ c.config.k }} bit</strong>
+            <p>Vị trí: {{ c.config.mode }}{% if c.config.mode in ['adaptive','edge'] %} · Ngưỡng {{ c.config.threshold }}{% endif %}</p>
+            <p>Nội dung: {{ c.size }} byte · CRC32 hợp lệ</p>
+            {% if c.equivalent_matching %}<p class="page-note">Cùng cách đọc với Matching; chưa xác định được chính xác thuật toán nhúng.</p>{% endif %}
+            <a class="primary-button candidate-link" href="{{ url_for('extract.page', analysis_token=analysis_token, candidate=c.id) }}">Dùng cấu hình này để trích xuất</a>
+        </article>
+        {% endfor %}
+    </div>
+    <p class="page-note">Ảnh và cấu hình chuyển tiếp chỉ giữ trong RAM tối đa 10 phút, tối đa 8 lần phân tích / 64 MiB. Khởi động lại web sẽ xóa dữ liệu này.</p>
+    {% else %}
+    <p class="warning-text">Chưa tìm thấy dữ liệu STW1 hợp lệ trong các cấu hình đã thử. Không kết luận ảnh sạch; không bao phủ công cụ khác, khóa chưa biết hoặc mọi ngưỡng.</p>
+    {% endif %}
+    <details><summary>Xem các lượt thử và bằng chứng</summary><div class="table-scroll"><table class="pixel-table"><thead><tr><th>Cách đọc</th><th>Vị trí</th><th>Ngưỡng</th><th>Kết quả</th></tr></thead><tbody>
+    {% for a in report.attempts %}<tr><td>{{ a.method }} / {{ a.k }}</td><td>{{ a.mode }}</td><td>{{ a.threshold }}</td><td>{{ a.result }}</td></tr>{% endfor %}
+    </tbody></table></div></details>
+</section>
+<section class="card result-card">
+    <h2>Các phép đo mô tả</h2>
+    {% for e in evidence %}<p class="evidence-line"><strong>{{ e.id }}</strong> {{ e.text }}</p>{% endfor %}
+    <p class="page-note">Các phép đo này không phải mô hình steganalysis đã được huấn luyện và không cung cấp xác suất có tin giấu.</p>
+</section>
+
+{% endif %}
+
+
+<section class="card hex-card">
+    <h2>Dữ liệu Hex (Hex Dump) — byte tệp gốc</h2>
+    {% if rows %}
+    <div class="hex-scroll">
+        <table class="hex-table">
+            <thead><tr><th>OFFSET</th><th>00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F</th><th>ASCII</th></tr></thead>
+            <tbody>
+                {% for r in rows %}
+                <tr><td>{{ r[0] }}</td><td>{{ r[1] }}</td><td>{{ r[2] }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="hex-empty">00000000 <span>Chưa có dữ liệu — hãy chọn ảnh để phân tích.</span></div>
+    {% endif %}
+    <p class="page-note">Tối đa 4.096 byte đầu. Byte nén PNG/JPEG khác giá trị pixel đã giải mã; không ánh xạ trực tiếp một byte nén thành một kênh màu.</p>
+</section>
+<p class="page-note">Tọa độ bắt đầu từ (0, 0). Chọn lại ảnh khi gửi lần phân tích mới. Kênh alpha không dùng để nhúng.</p>
+{% endblock %}

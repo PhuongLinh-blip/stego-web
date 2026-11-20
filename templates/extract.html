@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}Trích xuất · Stego Lab{% endblock %}
+{% block content %}
+<header class="page-heading">
+    <h1>Trích xuất thông điệp</h1>
+    <p>Khôi phục dữ liệu đã ẩn giấu từ tệp ảnh.</p>
+</header>
+
+<form action="/extract" method="post" enctype="multipart/form-data">
+    {% if handoff %}
+    <input type="hidden" name="analysis_token" value="{{ analysis_token }}">
+    <input type="hidden" name="candidate" value="{{ candidate_id }}">
+    <div class="card handoff-notice">Đã nhận ảnh và cấu hình {{ candidate_id }} từ Phân tích. Không cần tải lại ảnh hay nhập lại khóa. Cấu hình kiểm chứng được giữ nguyên; bạn chọn dạng đầu ra rồi nhấn Trích xuất.</div>
+    {% endif %}
+    <div class="two-columns">
+        <section class="card upload-card">
+
+                <div class="dropzone {{ 'has-image' if handoff else '' }}" id="dropzone">
+                    <input id="image" name="image" type="file"
+                           accept=".png,.bmp,.jpg,.jpeg" aria-label="Chọn ảnh" {% if handoff %}disabled{% else %}required{% endif %}>
+                    <div class="drop-content">
+                        <span class="upload-icon">↥</span>
+                        <strong>Kéo thả ảnh vào đây hoặc nhấp để chọn</strong>
+                        <small>Hỗ trợ: PNG, BMP, JPG/JPEG</small>
+                    </div>
+                    <img id="preview" alt="Xem trước ảnh" {% if handoff %}src="{{ cached_preview }}"{% else %}hidden{% endif %}>
+                </div>
+                <div class="file-info" id="file-info" hidden>
+                    <span class="file-symbol">▧</span>
+                    <div>
+                        <strong id="file-name"></strong>
+                        <small id="file-detail"></small>
+                    </div>
+                    <span class="chosen-mark">✓</span>
+                </div>
+
+            <p class="upload-status">Chọn ảnh chứa tin và giữ nguyên ảnh sau khi nhúng.</p>
+        </section>
+
+        <section class="card settings-card">
+
+<fieldset class="locked-config" {% if handoff %}disabled{% endif %}>
+                <label class="field-title">Phương pháp (Method)</label>
+                <div class="option-row method-options">
+                    <label class="option">
+                        <input type="radio" name="method" value="replacement" {% if values.get('method', 'replacement') == 'replacement' %}checked{% endif %}>
+                        <span>LSB Replacement</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="method" value="matching" {% if values.get('method') == 'matching' %}checked{% endif %}>
+                        <span>LSB Matching</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="method" value="lsbmr" {% if values.get('method') == 'lsbmr' %}checked{% endif %}>
+                        <span>LSBMR</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="method" value="jpeg_dct" {% if values.get('method') == 'jpeg_dct' %}checked{% endif %}>
+                        <span>JPEG DCT</span>
+                    </label>
+                </div>
+                <div id="bit-settings">
+                    <label class="field-title">Số bit thay thế LSB (Bit Depth)</label>
+                    <div class="option-row">
+                        <label class="option">
+                            <input type="radio" name="k" value="1" {% if values.get('k', '1') == '1' %}checked{% endif %}>
+                            <span>1-bit<small>Khuyên dùng</small></span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="k" value="2" {% if values.get('k', '1') == '2' %}checked{% endif %}>
+                            <span>2-bit</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="k" value="3" {% if values.get('k', '1') == '3' %}checked{% endif %}>
+                            <span>3-bit</span>
+                        </label>
+                    </div>
+                </div>
+                <p class="method-note" id="method-note" aria-live="polite">
+                    Thay trực tiếp các bit cuối của giá trị màu.
+                </p>
+                <!-- Vị trí và khóa được gửi tới Python ở cả hai trang. -->
+                <label class="field-title">Vị trí (Position Mode)</label>
+                <div class="option-row position-options">
+                    <label class="option">
+                        <input type="radio" name="position_mode" value="sequential" {% if values.get('position_mode', 'sequential') == 'sequential' %}checked{% endif %}>
+                        <span>Tuần tự</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="position_mode" value="keyed" {% if values.get('position_mode') == 'keyed' %}checked{% endif %}>
+                        <span>Có khóa</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="position_mode" value="adaptive" {% if values.get('position_mode') == 'adaptive' %}checked{% endif %}>
+                        <span>Thích nghi</span>
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="position_mode" value="edge" {% if values.get('position_mode') == 'edge' %}checked{% endif %}>
+                        <span>Theo biên ảnh</span>
+                    </label>
+                </div>
+                <div id="key-settings" hidden>
+                    <label class="field-title" for="key">Khóa vị trí</label>
+                    <input class="setting-input" id="key" name="key" type="password" autocomplete="off" maxlength="128" placeholder="Nhập cùng khóa khi giấu và trích xuất" disabled>
+                    <small class="method-note">Khóa xáo trộn vị trí, không mã hóa nội dung.</small>
+                </div>
+                <div id="threshold-settings" hidden>
+                    <label class="field-title" for="threshold">Ngưỡng chọn vùng (1–255)</label>
+                    <input class="setting-input" id="threshold" name="threshold" type="number" min="1" max="255" value="{{ values.get('threshold', '12') }}" disabled>
+                </div>
+                <p class="method-note" id="position-note" aria-live="polite">Từ góc trên trái, lần lượt R, G, B; không dùng alpha.</p>
+
+
+</fieldset>
+            <label class="field-title">Định dạng đầu ra (Output Format)</label>
+            <div class="option-row output-options">
+                <label class="option">
+                    <input type="radio" name="output" value="text" checked>
+                    <span>Văn bản UTF-8</span>
+                </label>
+                <label class="option">
+                    <input type="radio" name="output" value="file">
+                    <span>Tệp tin (File)</span>
+                </label>
+            </div>
+            <label class="field-title">Kiểm tra toàn vẹn (Integrity check)</label>
+            <div class="integrity-status">CRC32: {{ 'Hợp lệ' if message is defined else 'Chưa xử lý' }}</div>
+            <button class="primary-button" type="submit">Tiến hành Trích xuất</button>
+            <p class="action-note">Chọn đúng thuật toán đã dùng khi nhúng.</p>
+        </section>
+    </div>
+</form>
+
+{% if message is defined %}
+<section class="card result-card">
+    <div class="result-heading">
+        <h2>Kết quả giải mã</h2>
+        <div><button class="copy-button" id="copy-button" type="button">Sao chép</button>
+        <span class="success-text">✓ Trích xuất thành công</span></div>
+    </div>
+    <pre class="message-result" id="message-result">{{ message }}</pre>
+</section>
+{% endif %}
+<p class="page-note">Tệp tải về tên recovered.bin; đổi đuôi theo tệp gốc. Chỉ hỗ trợ payload STW1 của ứng dụng.</p>
+{% endblock %}
